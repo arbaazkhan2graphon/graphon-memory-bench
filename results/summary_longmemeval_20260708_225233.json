@@ -1,0 +1,251 @@
+{
+  "meta": {
+    "benchmark": "longmemeval",
+    "n_questions": 50,
+    "seed": 42,
+    "backends": [
+      "graphon"
+    ],
+    "graphon_modes": [
+      "direct"
+    ],
+    "reasoning_effort": "ultra",
+    "llm_model": "gpt-4o",
+    "retrieval_k": 10,
+    "started_at": "2026-07-08T22:34:19",
+    "wall_seconds": 1094.2,
+    "new_rows": 50
+  },
+  "ledger": {
+    "roles": {
+      "judge": {
+        "input_tokens": 16485,
+        "output_tokens": 3882,
+        "calls": 50
+      }
+    },
+    "total_cost_usd": 0.08,
+    "pricing_per_m": {
+      "input": 2.5,
+      "output": 10.0
+    }
+  },
+  "systems": {
+    "bm25/shared_reader": {
+      "n": 50,
+      "qa_accuracy": 0.545,
+      "recall_at_10": 0.9227,
+      "recall_n": 50,
+      "strict_full_coverage": 0.46,
+      "avg_latency": 0.751,
+      "p95_latency": 1.11,
+      "errors": 0,
+      "by_category": {
+        "knowledge-update": {
+          "n": 8,
+          "qa_accuracy": 0.375,
+          "recall_at_10": 1.0,
+          "recall_n": 8,
+          "strict_full_coverage": 0.375,
+          "avg_latency": 0.699,
+          "p95_latency": 0.844,
+          "errors": 0
+        },
+        "multi-session": {
+          "n": 13,
+          "qa_accuracy": 0.5,
+          "recall_at_10": 0.9077,
+          "recall_n": 13,
+          "strict_full_coverage": 0.4615,
+          "avg_latency": 0.934,
+          "p95_latency": 1.344,
+          "errors": 0
+        },
+        "single-session-assistant": {
+          "n": 6,
+          "qa_accuracy": 0.8333,
+          "recall_at_10": 1.0,
+          "recall_n": 6,
+          "strict_full_coverage": 0.8333,
+          "avg_latency": 0.632,
+          "p95_latency": 0.706,
+          "errors": 0
+        },
+        "single-session-preference": {
+          "n": 3,
+          "qa_accuracy": 0.0,
+          "recall_at_10": 1.0,
+          "recall_n": 3,
+          "strict_full_coverage": 0.0,
+          "avg_latency": 0.526,
+          "p95_latency": 0.503,
+          "errors": 0
+        },
+        "single-session-user": {
+          "n": 7,
+          "qa_accuracy": 0.8571,
+          "recall_at_10": 1.0,
+          "recall_n": 7,
+          "strict_full_coverage": 0.8571,
+          "avg_latency": 0.603,
+          "p95_latency": 0.673,
+          "errors": 0
+        },
+        "temporal-reasoning": {
+          "n": 13,
+          "qa_accuracy": 0.5192,
+          "recall_at_10": 0.7949,
+          "recall_n": 13,
+          "strict_full_coverage": 0.2308,
+          "avg_latency": 0.786,
+          "p95_latency": 0.981,
+          "errors": 0
+        }
+      }
+    },
+    "graphon/direct": {
+      "n": 50,
+      "qa_accuracy": 0.795,
+      "recall_at_10": 0.9327,
+      "recall_n": 50,
+      "strict_full_coverage": 0.7,
+      "avg_latency": 62.587,
+      "p95_latency": 135.997,
+      "errors": 0,
+      "by_category": {
+        "knowledge-update": {
+          "n": 8,
+          "qa_accuracy": 0.75,
+          "recall_at_10": 0.875,
+          "recall_n": 8,
+          "strict_full_coverage": 0.625,
+          "avg_latency": 62.805,
+          "p95_latency": 95.925,
+          "errors": 0
+        },
+        "multi-session": {
+          "n": 13,
+          "qa_accuracy": 0.7692,
+          "recall_at_10": 0.8885,
+          "recall_n": 13,
+          "strict_full_coverage": 0.7692,
+          "avg_latency": 56.232,
+          "p95_latency": 111.934,
+          "errors": 0
+        },
+        "single-session-assistant": {
+          "n": 6,
+          "qa_accuracy": 1.0,
+          "recall_at_10": 1.0,
+          "recall_n": 6,
+          "strict_full_coverage": 1.0,
+          "avg_latency": 70.118,
+          "p95_latency": 127.059,
+          "errors": 0
+        },
+        "single-session-preference": {
+          "n": 3,
+          "qa_accuracy": 0.5833,
+          "recall_at_10": 1.0,
+          "recall_n": 3,
+          "strict_full_coverage": 0.0,
+          "avg_latency": 122.434,
+          "p95_latency": 130.8,
+          "errors": 0
+        },
+        "single-session-user": {
+          "n": 7,
+          "qa_accuracy": 1.0,
+          "recall_at_10": 1.0,
+          "recall_n": 7,
+          "strict_full_coverage": 1.0,
+          "avg_latency": 45.984,
+          "p95_latency": 27.655,
+          "errors": 0
+        },
+        "temporal-reasoning": {
+          "n": 13,
+          "qa_accuracy": 0.6923,
+          "recall_at_10": 0.9295,
+          "recall_n": 13,
+          "strict_full_coverage": 0.5385,
+          "avg_latency": 60.459,
+          "p95_latency": 121.213,
+          "errors": 0
+        }
+      }
+    },
+    "graphon/shared_reader": {
+      "n": 50,
+      "qa_accuracy": 0.47,
+      "recall_at_10": 0.827,
+      "recall_n": 50,
+      "strict_full_coverage": 0.42,
+      "avg_latency": 7.948,
+      "p95_latency": 17.413,
+      "errors": 0,
+      "by_category": {
+        "knowledge-update": {
+          "n": 8,
+          "qa_accuracy": 0.5,
+          "recall_at_10": 0.875,
+          "recall_n": 8,
+          "strict_full_coverage": 0.5,
+          "avg_latency": 5.99,
+          "p95_latency": 7.266,
+          "errors": 0
+        },
+        "multi-session": {
+          "n": 13,
+          "qa_accuracy": 0.3846,
+          "recall_at_10": 0.8538,
+          "recall_n": 13,
+          "strict_full_coverage": 0.3846,
+          "avg_latency": 8.25,
+          "p95_latency": 13.428,
+          "errors": 0
+        },
+        "single-session-assistant": {
+          "n": 6,
+          "qa_accuracy": 0.8333,
+          "recall_at_10": 1.0,
+          "recall_n": 6,
+          "strict_full_coverage": 0.8333,
+          "avg_latency": 6.904,
+          "p95_latency": 5.017,
+          "errors": 0
+        },
+        "single-session-preference": {
+          "n": 3,
+          "qa_accuracy": 0.0,
+          "recall_at_10": 1.0,
+          "recall_n": 3,
+          "strict_full_coverage": 0.0,
+          "avg_latency": 14.09,
+          "p95_latency": 13.94,
+          "errors": 0
+        },
+        "single-session-user": {
+          "n": 7,
+          "qa_accuracy": 0.7143,
+          "recall_at_10": 0.7143,
+          "recall_n": 7,
+          "strict_full_coverage": 0.7143,
+          "avg_latency": 4.806,
+          "p95_latency": 5.781,
+          "errors": 0
+        },
+        "temporal-reasoning": {
+          "n": 13,
+          "qa_accuracy": 0.3462,
+          "recall_at_10": 0.7115,
+          "recall_n": 13,
+          "strict_full_coverage": 0.1538,
+          "avg_latency": 9.606,
+          "p95_latency": 17.134,
+          "errors": 0
+        }
+      }
+    }
+  }
+}

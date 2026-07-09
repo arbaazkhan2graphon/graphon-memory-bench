@@ -1,0 +1,207 @@
+{
+  "meta": {
+    "benchmark": "locomo",
+    "n_questions": 300,
+    "seed": 42,
+    "backends": [
+      "graphon",
+      "bm25"
+    ],
+    "graphon_modes": [
+      "direct",
+      "shared_reader"
+    ],
+    "reasoning_effort": "standard",
+    "llm_model": "gpt-4o",
+    "retrieval_k": 10,
+    "started_at": "2026-07-07T23:46:25",
+    "graphon_builds": {
+      "locomo:conv-26": 10.2,
+      "locomo:conv-44": 9.8
+    },
+    "wall_seconds": 582.5,
+    "new_rows": 864
+  },
+  "ledger": {
+    "roles": {
+      "decomposer": {
+        "input_tokens": 34085,
+        "output_tokens": 6895,
+        "calls": 288
+      },
+      "judge": {
+        "input_tokens": 217614,
+        "output_tokens": 60679,
+        "calls": 864
+      },
+      "reader": {
+        "input_tokens": 2372536,
+        "output_tokens": 12223,
+        "calls": 576
+      }
+    },
+    "total_cost_usd": 7.3586,
+    "pricing_per_m": {
+      "input": 2.5,
+      "output": 10.0
+    }
+  },
+  "systems": {
+    "bm25/shared_reader": {
+      "n": 300,
+      "qa_accuracy": 0.4645,
+      "recall_at_10": 0.5535,
+      "recall_n": 298,
+      "strict_full_coverage": 0.4133,
+      "avg_latency": 0.677,
+      "p95_latency": 0.931,
+      "errors": 0,
+      "by_category": {
+        "multi-hop": {
+          "n": 55,
+          "qa_accuracy": 0.1639,
+          "recall_at_10": 0.2141,
+          "recall_n": 55,
+          "strict_full_coverage": 0.0545,
+          "avg_latency": 0.636,
+          "p95_latency": 0.931,
+          "errors": 0
+        },
+        "open-domain": {
+          "n": 19,
+          "qa_accuracy": 0.0263,
+          "recall_at_10": 0.3045,
+          "recall_n": 17,
+          "strict_full_coverage": 0.0,
+          "avg_latency": 0.582,
+          "p95_latency": 0.729,
+          "errors": 0
+        },
+        "single-hop": {
+          "n": 164,
+          "qa_accuracy": 0.6026,
+          "recall_at_10": 0.6778,
+          "recall_n": 164,
+          "strict_full_coverage": 0.561,
+          "avg_latency": 0.72,
+          "p95_latency": 0.906,
+          "errors": 0
+        },
+        "temporal": {
+          "n": 62,
+          "qa_accuracy": 0.5,
+          "recall_at_10": 0.5941,
+          "recall_n": 62,
+          "strict_full_coverage": 0.4677,
+          "avg_latency": 0.628,
+          "p95_latency": 0.778,
+          "errors": 0
+        }
+      }
+    },
+    "graphon/direct": {
+      "n": 300,
+      "qa_accuracy": 0.8241,
+      "recall_at_10": 0.7511,
+      "recall_n": 298,
+      "strict_full_coverage": 0.7333,
+      "avg_latency": 5.598,
+      "p95_latency": 12.678,
+      "errors": 0,
+      "by_category": {
+        "multi-hop": {
+          "n": 55,
+          "qa_accuracy": 0.798,
+          "recall_at_10": 0.7207,
+          "recall_n": 55,
+          "strict_full_coverage": 0.5818,
+          "avg_latency": 7.295,
+          "p95_latency": 16.185,
+          "errors": 0
+        },
+        "open-domain": {
+          "n": 19,
+          "qa_accuracy": 0.7105,
+          "recall_at_10": 0.6877,
+          "recall_n": 17,
+          "strict_full_coverage": 0.5263,
+          "avg_latency": 7.772,
+          "p95_latency": 12.678,
+          "errors": 0
+        },
+        "single-hop": {
+          "n": 164,
+          "qa_accuracy": 0.8496,
+          "recall_at_10": 0.7439,
+          "recall_n": 164,
+          "strict_full_coverage": 0.7988,
+          "avg_latency": 4.863,
+          "p95_latency": 10.277,
+          "errors": 0
+        },
+        "temporal": {
+          "n": 62,
+          "qa_accuracy": 0.8145,
+          "recall_at_10": 0.8145,
+          "recall_n": 62,
+          "strict_full_coverage": 0.7581,
+          "avg_latency": 5.371,
+          "p95_latency": 8.364,
+          "errors": 0
+        }
+      }
+    },
+    "graphon/shared_reader": {
+      "n": 300,
+      "qa_accuracy": 0.6466,
+      "recall_at_10": 0.7511,
+      "recall_n": 298,
+      "strict_full_coverage": 0.55,
+      "avg_latency": 6.876,
+      "p95_latency": 13.568,
+      "errors": 0,
+      "by_category": {
+        "multi-hop": {
+          "n": 55,
+          "qa_accuracy": 0.573,
+          "recall_at_10": 0.7207,
+          "recall_n": 55,
+          "strict_full_coverage": 0.2909,
+          "avg_latency": 8.595,
+          "p95_latency": 18.195,
+          "errors": 0
+        },
+        "open-domain": {
+          "n": 19,
+          "qa_accuracy": 0.2697,
+          "recall_at_10": 0.6877,
+          "recall_n": 17,
+          "strict_full_coverage": 0.2105,
+          "avg_latency": 9.008,
+          "p95_latency": 13.342,
+          "errors": 0
+        },
+        "single-hop": {
+          "n": 164,
+          "qa_accuracy": 0.7393,
+          "recall_at_10": 0.7439,
+          "recall_n": 164,
+          "strict_full_coverage": 0.6951,
+          "avg_latency": 6.191,
+          "p95_latency": 13.054,
+          "errors": 0
+        },
+        "temporal": {
+          "n": 62,
+          "qa_accuracy": 0.582,
+          "recall_at_10": 0.8145,
+          "recall_n": 62,
+          "strict_full_coverage": 0.5,
+          "avg_latency": 6.511,
+          "p95_latency": 9.569,
+          "errors": 0
+        }
+      }
+    }
+  }
+}

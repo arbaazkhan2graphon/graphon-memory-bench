@@ -1,0 +1,12 @@
+# Core
+graphon-client>=0.1.0      # Official Graphon Python SDK (https://app.graphon.ai/docs)
+openai>=1.40.0             # Shared reader + judge (gpt-4o), OpenAI-compatible
+PyYAML>=6.0                # config.yaml parsing
+python-dotenv>=1.0.0       # load .env
+requests>=2.31.0           # dataset downloads
+
+# Reporting
+reportlab>=4.0.0           # customer-facing PDF report
+
+# Optional but recommended
+certifi>=2024.2.2          # CA bundle for downloads (fixes macOS SSL verify errors)

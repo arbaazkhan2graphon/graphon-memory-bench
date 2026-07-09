@@ -1,0 +1,20 @@
+# Secrets & local config
+.env
+
+# Downloaded datasets (fetch with download_data.py)
+data/
+
+# Graphon local state
+.graphon_groups_cache.json
+.graphon_docs/
+
+# Run outputs (published artifacts are whitelisted below)
+results/*
+!results/Graphon_Memory_Benchmark_Report.pdf
+!results/summary_*.json
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/

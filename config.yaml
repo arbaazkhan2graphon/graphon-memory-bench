@@ -1,0 +1,61 @@
+# Configuration for the LOCOMO + LongMemEval-S -> Graphon memory benchmark.
+# Environment variables (see .env.example) take precedence for secrets.
+
+# ---------------------------------------------------------------------------
+# Data
+# ---------------------------------------------------------------------------
+data:
+  dir: data
+  locomo:
+    # Pinned for reproducibility; recorded in the download manifest.
+    repo: snap-research/locomo
+    ref: main            # resolved to a SHA at download time -> manifest
+    file: data/locomo10.json
+  longmemeval:
+    # Official cleaned release on HuggingFace.
+    hf_repo: xiaowu0162/longmemeval-cleaned
+    file: longmemeval_s_cleaned.json
+
+# ---------------------------------------------------------------------------
+# Sampling (matches the graphify benchmark table: LOCOMO n=300, LME-S n=50)
+# ---------------------------------------------------------------------------
+sampling:
+  seed: 42
+  locomo_n: 300          # stratified over the 4 scored categories; adversarial excluded
+  longmemeval_n: 50      # stratified over question_type; abstention included
+
+# ---------------------------------------------------------------------------
+# Graphon
+# ---------------------------------------------------------------------------
+graphon:
+  group_name_prefix: membench
+  build_timeout_seconds: 3600
+  reasoning_effort: standard    # "standard" | "ultra"
+  retrieval_k: 10               # top-k sources used for recall@10 + shared reader
+  groups_cache_file: .graphon_groups_cache.json
+
+# ---------------------------------------------------------------------------
+# Shared LLM (one model for every LLM role: reader + judge + fact decomposition)
+# ---------------------------------------------------------------------------
+llm:
+  model: gpt-4o
+  temperature: 0.0
+  max_tokens: 1024
+  # USD per 1M tokens; used by the spend ledger.
+  input_cost_per_m: 2.50
+  output_cost_per_m: 10.00
+
+# ---------------------------------------------------------------------------
+# Scoring
+# ---------------------------------------------------------------------------
+scoring:
+  # coverage = (covered + 0.5 * partial) / total_key_facts
+  # QA accuracy reported as mean coverage across questions.
+  keyfacts_cache: results/keyfacts_cache.json
+  # LOCOMO recall@10: a gold evidence turn counts as retrieved when >= this
+  # fraction of its word 5-grams appear in the concatenated top-10 chunks.
+  evidence_ngram: 5
+  evidence_threshold: 0.6
+
+run:
+  max_spend_usd: 25.0    # hard stop for OpenAI spend per run (ledger-enforced)
