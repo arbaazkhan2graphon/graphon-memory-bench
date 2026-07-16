@@ -11,7 +11,7 @@ import json
 import logging
 import threading
 import time
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -75,6 +75,10 @@ def summarize(rows: list[dict], meta: dict, ledger_summary: dict) -> dict:
     summary: dict[str, Any] = {"meta": meta, "ledger": ledger_summary, "systems": {}}
     for system, srows in sorted(by_system.items()):
         entry = _agg(srows)
+        # Which reasoning effort produced these rows (from row data, not run
+        # meta: a later resumed process may have run with a different flag).
+        efforts = Counter(r.get("effort", "standard") for r in srows)
+        entry["effort"] = efforts.most_common(1)[0][0]
         by_cat: dict[str, list[dict]] = defaultdict(list)
         for r in srows:
             by_cat[r["category"]].append(r)

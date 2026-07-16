@@ -5,6 +5,9 @@ PyYAML>=6.0                # config.yaml parsing
 python-dotenv>=1.0.0       # load .env
 requests>=2.31.0           # dataset downloads
 
+# Competitor baseline (optional; only needed for --backends mem0)
+mem0ai>=2.0.0              # mem0 hosted platform SDK
+
 # Reporting
 reportlab>=4.0.0           # customer-facing PDF report
 

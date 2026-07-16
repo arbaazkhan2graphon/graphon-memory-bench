@@ -10,8 +10,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 BENCHMARKS = ("locomo", "longmemeval")
-BACKENDS = ("graphon", "bm25")
-# graphon runs in two answer modes; bm25 only in shared_reader.
+BACKENDS = ("graphon", "bm25", "mem0")
+# graphon runs in two answer modes; bm25/mem0 only in shared_reader.
 ANSWER_MODES = ("direct", "shared_reader")
 
 

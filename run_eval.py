@@ -28,10 +28,9 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-from dotenv import load_dotenv
-
 import metrics
 from bm25_backend import BM25Backend, lme_chunks, locomo_chunks
+from mem0_backend import Mem0Backend, lme_sessions_for_mem0, locomo_sessions_for_mem0
 from data_loader import (
     PROJECT_DIR,
     lme_questions,
@@ -43,6 +42,7 @@ from data_loader import (
     render_locomo_conversation,
     stratified_sample,
 )
+from dotenv import load_dotenv
 from graphon_backend import GraphonBackend
 from judge import (
     KeyFactStore,
@@ -63,7 +63,7 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--benchmark", choices=["locomo", "longmemeval"], required=True)
     p.add_argument("--backends", default="graphon,bm25",
-                   help="comma list: graphon,bm25")
+                   help="comma list: graphon,bm25,mem0")
     p.add_argument("--graphon-modes", default="direct,shared_reader",
                    help="comma list: direct,shared_reader")
     p.add_argument("--n", type=int, default=None, help="sample size (default from config)")
@@ -105,6 +105,12 @@ def prepare_locomo(cfg: dict, questions: list[Question], backends: dict,
                 builds[f"locomo:{sid}"] = round(build_s, 1)
         if "bm25" in backends:
             backends["bm25"].setup_corpus(f"locomo:{sid}", locomo_chunks(sample))
+        if "mem0" in backends:
+            secs = backends["mem0"].ingest_sessions(
+                f"locomo:{sid}", locomo_sessions_for_mem0(sample)
+            )
+            if secs is not None:
+                run_meta.setdefault("mem0_ingests", {})[f"locomo:{sid}"] = round(secs, 1)
 
 
 def prepare_lme_corpus(cfg: dict, item: dict, backends: dict,
@@ -120,6 +126,10 @@ def prepare_lme_corpus(cfg: dict, item: dict, backends: dict,
             run_meta.setdefault("graphon_builds", {})[f"lme:{qid}"] = round(build_s, 1)
     if "bm25" in backends:
         backends["bm25"].setup_corpus(f"lme:{qid}", lme_chunks(item))
+    if "mem0" in backends:
+        secs = backends["mem0"].ingest_sessions(f"lme:{qid}", lme_sessions_for_mem0(item))
+        if secs is not None:
+            run_meta.setdefault("mem0_ingests", {})[f"lme:{qid}"] = round(secs, 1)
 
 
 # ---------------------------------------------------------------------------
@@ -146,8 +156,9 @@ def evaluate_question(
     plan: list[tuple[str, str]] = []
     if "graphon" in backends:
         plan.extend(("graphon", m) for m in graphon_modes)
-    if "bm25" in backends:
-        plan.append(("bm25", "shared_reader"))
+    for other in ("bm25", "mem0"):
+        if other in backends:
+            plan.append((other, "shared_reader"))
     plan = [(b, m) for b, m in plan if (q.qid, b, m) not in done]
     if not plan:
         return 0
@@ -242,6 +253,8 @@ def main() -> int:
         backends["graphon"] = GraphonBackend(cfg)
     if "bm25" in backend_names:
         backends["bm25"] = BM25Backend(cfg)
+    if "mem0" in backend_names:
+        backends["mem0"] = Mem0Backend(cfg)
 
     # ----- questions ------------------------------------------------------
     if args.benchmark == "locomo":
@@ -290,7 +303,7 @@ def main() -> int:
         needed = [
             (b, m) for b, m in
             ([("graphon", m) for m in graphon_modes] if "graphon" in backends else [])
-            + ([("bm25", "shared_reader")] if "bm25" in backends else [])
+            + [(o, "shared_reader") for o in ("bm25", "mem0") if o in backends]
             if (q.qid, b, m) not in done
         ]
         if not needed:
@@ -325,7 +338,7 @@ def main() -> int:
                     logger.error("STOPPING: %s", exc)
                     stop.set()
                     continue
-                except Exception as exc:  # noqa: BLE001 - keep other workers going
+                except Exception as exc:
                     logger.error("Question %s failed: %s", q.qid, exc)
                     n_rows = 0
                 with progress_lock:

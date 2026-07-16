@@ -12,16 +12,17 @@ ingest  ->  index  ->  search  ->  answer  ->  grade
 
 An in-harness **BM25 anchor baseline** runs over the identical corpus with the
 same reader and judge, so absolute numbers can be cross-referenced against
-published tables that include a BM25 row.
+published tables that include a BM25 row. **mem0's hosted platform** can also
+be run live inside the harness as a competitor baseline.
 
 ## Headline results
 
-| Dataset | Metric | Graphon |
-|---|---|---|
-| LOCOMO (n=300) | QA accuracy (ultra mode) | **85.2%** |
-| LOCOMO (n=300) | recall@10 (standard retrieval) | **0.751** |
-| LongMemEval-S (n=50) | QA accuracy (ultra mode) | **79.5%** |
-| Graph build | external LLM credits | **$0** |
+| Dataset | Metric | Graphon | mem0 hosted (same harness) |
+|---|---|---|---|
+| LOCOMO (n=300) | QA accuracy (ultra mode) | **85.2%** | 54.6% |
+| LOCOMO (n=300) | recall@10 (standard retrieval) | **0.751** | — |
+| LongMemEval-S (n=50) | QA accuracy (ultra mode) | **79.5%** | — |
+| Graph build | external LLM credits | **$0** | $0 (indexes on their platform) |
 
 Full report: [`results/Graphon_Memory_Benchmark_Report.pdf`](results/Graphon_Memory_Benchmark_Report.pdf)
 (run summaries with per-category breakdowns are in `results/summary_*.json`).
@@ -32,6 +33,7 @@ Full report: [`results/Graphon_Memory_Benchmark_Report.pdf`](results/Graphon_Mem
 |---|---|
 | `graphon/direct` | Graphon's own end-to-end answer (`query_group`) — the headline; how the product is used. |
 | `graphon/shared_reader` | gpt-4o answers from Graphon's top-10 retrieved sources — structurally identical to "retriever + shared reader" harnesses. |
+| `mem0/shared_reader` | mem0's **hosted platform** run live in this harness: identical conversations ingested via their API (one mem0 user per corpus), top-10 memory search + the same gpt-4o reader. Requires `MEM0_API_KEY`. |
 | `bm25/shared_reader` | Okapi BM25 (in-harness, dependency-free) over the same rendered text + gpt-4o reader. |
 
 ## Quickstart

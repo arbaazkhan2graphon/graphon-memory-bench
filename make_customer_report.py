@@ -42,6 +42,7 @@ GRAPHON_BLUE = colors.HexColor("#2563eb")
 GRAPHON_DARK = colors.HexColor("#1e293b")
 FIELD_GRAY = colors.HexColor("#94a3b8")
 ANCHOR_TEAL = colors.HexColor("#0d9488")
+MEM0_ORANGE = colors.HexColor("#f59e0b")
 LIGHT_ROW = colors.HexColor("#f1f5f9")
 GRID = colors.HexColor("#e2e8f0")
 
@@ -66,6 +67,7 @@ SYSTEM_LABELS = {
     "graphon/direct": "Graphon (direct answer)",
     "graphon/shared_reader": "Graphon + shared reader",
     "bm25/shared_reader": "BM25 anchor + shared reader",
+    "mem0/shared_reader": "mem0 (hosted) + shared reader",
 }
 
 LOCOMO_CAT_ORDER = ["single-hop", "multi-hop", "temporal", "open-domain"]
@@ -207,6 +209,7 @@ def build_report(out_path: Path) -> Path:
     g_direct = l_sys.get("graphon/direct", {})
     g_reader = l_sys.get("graphon/shared_reader", {})
     bm25 = l_sys.get("bm25/shared_reader", {})
+    l_mem0 = l_sys.get("mem0/shared_reader", {})
 
     flow: list = []
 
@@ -224,7 +227,10 @@ def build_report(out_path: Path) -> Path:
     # ---- executive summary -----------------------------------------------
     flow.append(Paragraph("Executive Summary", h2))
     lme_direct = lme["systems"].get("graphon/direct", {}) if lme else {}
-    loco_effort = l_meta.get("reasoning_effort", "standard")
+    # Effort comes from the rows behind each system entry, not run meta: the
+    # newest summary may have been written by a process that only ran other
+    # backends (e.g. a mem0-only run) with a different --reasoning-effort.
+    loco_effort = g_direct.get("effort") or l_meta.get("reasoning_effort", "standard")
     loco_ultra = loco_effort == "ultra"
     # Ultra is an agentic answer harness without a fixed top-10 retrieval, so
     # recall@10 always comes from the standard-mode retrieval surface (the
@@ -243,13 +249,21 @@ def build_report(out_path: Path) -> Path:
         f"{loco_recall:.3f}</b>"
         + (" (measured on Graphon's standard retrieval)." if loco_ultra else "."),
     ]
-    lme_effort = lme["meta"].get("reasoning_effort", "standard") if lme else "standard"
+    lme_effort = (lme_direct.get("effort")
+                  or (lme["meta"].get("reasoning_effort", "standard") if lme else "standard"))
     if lme_direct:
         effort_note = (" using Graphon's <b>ultra</b> reasoning mode (an agentic "
                        "answer harness)" if lme_effort == "ultra" else "")
         exec_bits.append(
             f"On LongMemEval-S, Graphon answered directly at "
             f"<b>{_pct(lme_direct.get('qa_accuracy', 0))}% QA accuracy</b>{effort_note}."
+        )
+    if l_mem0:
+        exec_bits.append(
+            f"As a live competitor baseline, <b>mem0's hosted platform</b> was run "
+            f"inside this same harness — identical conversations ingested through "
+            f"their API, top-10 retrieved memories, same shared reader and judge — "
+            f"scoring <b>{_pct(l_mem0.get('qa_accuracy', 0))}% on LOCOMO</b>."
         )
     exec_bits.append(
         "Graphon builds its memory index server-side: this harness spent "
@@ -318,7 +332,7 @@ def build_report(out_path: Path) -> Path:
 
     rows = [["System", "QA accuracy", "recall@10", "Avg latency"]]
     ours = [("graphon/direct", g_direct), ("graphon/shared_reader", g_reader),
-            ("bm25/shared_reader", bm25)]
+            ("mem0/shared_reader", l_mem0), ("bm25/shared_reader", bm25)]
     for key, entry in ours:
         if not entry:
             continue
@@ -327,6 +341,8 @@ def build_report(out_path: Path) -> Path:
         if key == "graphon/direct" and loco_ultra:
             label = "Graphon (direct answer, ultra)"
             rec = g_reader.get("recall_at_10") if g_reader else None
+        if key == "mem0/shared_reader":
+            rec = None  # extracted-fact memories; n-gram turn recall not comparable
         rows.append([
             label,
             f"{_pct(entry['qa_accuracy'])}%",
@@ -353,6 +369,9 @@ def build_report(out_path: Path) -> Path:
     loco_bar_label = "Graphon\n(direct, ultra)" if loco_ultra else "Graphon\n(direct)"
     comp_pairs = [(loco_bar_label, _pct(g_direct.get("qa_accuracy", 0)))]
     comp_colors = [GRAPHON_BLUE]
+    if l_mem0:
+        comp_pairs.append(("mem0 hosted\n(our harness)", _pct(l_mem0["qa_accuracy"])))
+        comp_colors.append(MEM0_ORANGE)
     if bm25:
         comp_pairs.append(("BM25 anchor\n(our harness)", _pct(bm25["qa_accuracy"])))
         comp_colors.append(ANCHOR_TEAL)
@@ -361,8 +380,9 @@ def build_report(out_path: Path) -> Path:
         comp_colors.append(FIELD_GRAY)
     flow.append(_bar_chart(comp_pairs, comp_colors))
     flow.append(Paragraph(
-        "Figure 1. LOCOMO QA accuracy: Graphon and our BM25 anchor vs published "
-        "vendor numbers (gray).", caption))
+        "Figure 1. LOCOMO QA accuracy: Graphon, mem0's hosted platform run in "
+        "this harness (orange), and our BM25 anchor vs published vendor numbers "
+        "(gray).", caption))
     flow.append(Spacer(1, 8))
 
     rec_label = "Graphon\n(standard retrieval)" if loco_ultra else "Graphon\n(direct)"
@@ -382,21 +402,41 @@ def build_report(out_path: Path) -> Path:
     # per-category table
     flow.append(Paragraph("LOCOMO accuracy by question category", h2))
     g_direct_col = "Graphon direct (ultra)" if loco_ultra else "Graphon direct"
-    cat_rows = [["Category", "n", g_direct_col, "Graphon + reader", "BM25 anchor"]]
+    cat_rows = [["Category", "n", g_direct_col, "Graphon + reader",
+                 "mem0 hosted", "BM25 anchor"]]
     for cat in LOCOMO_CAT_ORDER:
         d = g_direct.get("by_category", {}).get(cat)
         if not d:
             continue
         r = g_reader.get("by_category", {}).get(cat, {})
+        m0c = l_mem0.get("by_category", {}).get(cat, {}) if l_mem0 else {}
         bmc = bm25.get("by_category", {}).get(cat, {}) if bm25 else {}
         cat_rows.append([
             cat, str(d["n"]),
             f"{_pct(d['qa_accuracy'])}%",
             f"{_pct(r['qa_accuracy'])}%" if r else "-",
+            f"{_pct(m0c['qa_accuracy'])}%" if m0c else "-",
             f"{_pct(bmc['qa_accuracy'])}%" if bmc else "-",
         ])
     flow.append(_styled_table(
-        cat_rows, [1.4 * inch, 0.6 * inch, 1.5 * inch, 1.6 * inch, 1.4 * inch]))
+        cat_rows, [1.15 * inch, 0.5 * inch, 1.45 * inch, 1.35 * inch,
+                   1.15 * inch, 1.1 * inch]))
+    if l_mem0:
+        flow.append(Spacer(1, 6))
+        flow.append(Paragraph(
+            "mem0 (hosted) was run live inside this harness: the identical "
+            "conversations were ingested through their platform API (one mem0 "
+            "user per conversation, session dates preserved), each question "
+            "searched their top-10 memories, and the same gpt-4o reader and "
+            "key-fact judge scored the answers. mem0's own published 92.5% on "
+            "LOCOMO uses a binary judge instructed to be lenient and up to 200 "
+            "retrieved memories per question; under this harness's stricter "
+            "quote-verified grading at top-10, their hosted platform scores as "
+            "shown above. recall@10 is n-gram-based against gold dialog turns, "
+            "which penalizes mem0's extracted-fact memories; QA accuracy is the "
+            "comparable column.",
+            footnote,
+        ))
 
     # ---- LongMemEval -------------------------------------------------------
     if lme:
@@ -507,10 +547,9 @@ def build_report(out_path: Path) -> Path:
         cost_rows.append(["LongMemEval-S run OpenAI spend (reader + judge)",
                           f"~${lme_cost:.2f}" if lme_cost else
                           f"${lme_ledger.get('total_cost_usd', 0):.2f}"])
-    effort_str = l_meta.get("reasoning_effort", "standard")
+    effort_str = loco_effort
     if lme:
-        effort_str = (f"LOCOMO: {effort_str}; "
-                      f"LongMemEval-S: {lme['meta'].get('reasoning_effort', 'standard')}")
+        effort_str = f"LOCOMO: {loco_effort}; LongMemEval-S: {lme_effort}"
     cost_rows.append(["Reasoning effort", effort_str])
     cost_rows.append(["Shared reader / judge model", l_meta.get("llm_model", "gpt-4o")])
     flow.append(_styled_table(cost_rows, [3.4 * inch, 2.8 * inch]))
