@@ -27,6 +27,12 @@ be run live inside the harness as a competitor baseline.
 Full report: [`results/Graphon_Memory_Benchmark_Report.pdf`](results/Graphon_Memory_Benchmark_Report.pdf)
 (run summaries with per-category breakdowns are in `results/summary_*.json`).
 
+**Why our mem0 number (54.6%) differs from their self-reported 92.5%** — judge
+leniency, retrieval depth (top-200 vs top-10), and per-benchmark prompt tuning —
+is explained number by number in
+[`results/Graphon_vs_mem0_Memory_Benchmark.pdf`](results/Graphon_vs_mem0_Memory_Benchmark.pdf)
+(regenerate with `make_blog_report.py`).
+
 ## Systems evaluated
 
 | System | What it is |

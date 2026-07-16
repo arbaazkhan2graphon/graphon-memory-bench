@@ -11,6 +11,7 @@ data/
 # Run outputs (published artifacts are whitelisted below)
 results/*
 !results/Graphon_Memory_Benchmark_Report.pdf
+!results/Graphon_vs_mem0_Memory_Benchmark.pdf
 !results/summary_*.json
 *.log
 
