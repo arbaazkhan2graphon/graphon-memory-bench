@@ -18,8 +18,8 @@ published tables that include a BM25 row.
 
 | Dataset | Metric | Graphon |
 |---|---|---|
-| LOCOMO (n=300) | QA accuracy | **82.4%** |
-| LOCOMO (n=300) | recall@10 | **0.751** |
+| LOCOMO (n=300) | QA accuracy (ultra mode) | **85.2%** |
+| LOCOMO (n=300) | recall@10 (standard retrieval) | **0.751** |
 | LongMemEval-S (n=50) | QA accuracy (ultra mode) | **79.5%** |
 | Graph build | external LLM credits | **$0** |
 

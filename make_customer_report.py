@@ -78,6 +78,20 @@ def _latest_summary(benchmark: str) -> dict | None:
     return json.loads(Path(paths[-1]).read_text(encoding="utf-8"))
 
 
+def _total_ledger_cost(benchmark: str) -> float:
+    """Cumulative OpenAI spend across every run process for a benchmark.
+
+    Each process writes its own per-process ledger into its summary, so the
+    sum over all summaries is the true total spent (resumed runs only pay for
+    new rows; forced re-runs genuinely spent again).
+    """
+    total = 0.0
+    for p in glob.glob(str(PROJECT_DIR / "results" / f"summary_{benchmark}_*.json")):
+        led = json.loads(Path(p).read_text(encoding="utf-8")).get("ledger", {})
+        total += float(led.get("total_cost_usd", 0.0))
+    return total
+
+
 def _lme_cost_estimate(loco: dict) -> float | None:
     """Estimate total LME OpenAI spend from per-row reader tokens.
 
@@ -210,6 +224,14 @@ def build_report(out_path: Path) -> Path:
     # ---- executive summary -----------------------------------------------
     flow.append(Paragraph("Executive Summary", h2))
     lme_direct = lme["systems"].get("graphon/direct", {}) if lme else {}
+    loco_effort = l_meta.get("reasoning_effort", "standard")
+    loco_ultra = loco_effort == "ultra"
+    # Ultra is an agentic answer harness without a fixed top-10 retrieval, so
+    # recall@10 always comes from the standard-mode retrieval surface (the
+    # shared_reader rows share the same retrieval as standard direct).
+    loco_recall = (g_reader if loco_ultra else g_direct).get("recall_at_10", 0) or 0
+    loco_note = (" using Graphon's <b>ultra</b> reasoning mode (an agentic answer "
+                 "harness)" if loco_ultra else "")
     exec_bits = [
         f"Graphon was evaluated on the two academic benchmarks the memory-systems "
         f"field reports on: <b>LOCOMO</b> (n={l_meta['n_questions']}, multi-session "
@@ -217,8 +239,9 @@ def build_report(out_path: Path) -> Path:
         f"histories per question). Answers were graded by key-fact coverage with "
         f"auditable verbatim-quote verdicts.",
         f"On LOCOMO, Graphon answered directly at <b>{_pct(g_direct.get('qa_accuracy', 0))}% "
-        f"QA accuracy</b> with <b>retrieval recall@10 of "
-        f"{g_direct.get('recall_at_10', 0):.3f}</b>.",
+        f"QA accuracy</b>{loco_note}, with <b>retrieval recall@10 of "
+        f"{loco_recall:.3f}</b>"
+        + (" (measured on Graphon's standard retrieval)." if loco_ultra else "."),
     ]
     lme_effort = lme["meta"].get("reasoning_effort", "standard") if lme else "standard"
     if lme_direct:
@@ -240,13 +263,14 @@ def build_report(out_path: Path) -> Path:
     flow.append(Paragraph("Results at a Glance", h2))
     glance = [["Suite", "Dataset (n)", "Metric", "Graphon", "Published field*"]]
     glance.append([
-        "Memory", f"LOCOMO ({l_meta['n_questions']})", "QA accuracy",
+        "Memory", f"LOCOMO ({l_meta['n_questions']})",
+        "QA accuracy (ultra)" if loco_ultra else "QA accuracy",
         f"{_pct(g_direct.get('qa_accuracy', 0))}%",
         "graphify 45.3%, supermemory 49.7%,\nBM25 31.3%, mem0 27.3%",
     ])
     glance.append([
         "Memory", f"LOCOMO ({l_meta['n_questions']})", "recall@10",
-        f"{g_direct.get('recall_at_10', 0):.3f}",
+        f"{loco_recall:.3f}",
         "graphify 0.497, BM25 0.362,\nsupermemory 0.149, mem0 0.048",
     ])
     if lme_direct:
@@ -282,7 +306,12 @@ def build_report(out_path: Path) -> Path:
         "questions sampled with a fixed seed, stratified over the four scored "
         "categories (adversarial excluded, as the field reports). One Graphon "
         "group per conversation; the BM25 anchor indexes the identical rendered "
-        "text and shares the same reader and judge.",
+        "text and shares the same reader and judge."
+        + (" Graphon (direct) ran in <b>ultra</b> reasoning mode — an agentic "
+           "answer harness inside Graphon rather than a fixed top-10 retrieval, "
+           "so recall@10 for that row is measured on Graphon's standard "
+           "retrieval (identical to the shared-reader row)."
+           if loco_ultra else ""),
         body,
     ))
     flow.append(Spacer(1, 8))
@@ -293,9 +322,13 @@ def build_report(out_path: Path) -> Path:
     for key, entry in ours:
         if not entry:
             continue
+        label = SYSTEM_LABELS[key]
         rec = entry.get("recall_at_10")
+        if key == "graphon/direct" and loco_ultra:
+            label = "Graphon (direct answer, ultra)"
+            rec = g_reader.get("recall_at_10") if g_reader else None
         rows.append([
-            SYSTEM_LABELS[key],
+            label,
             f"{_pct(entry['qa_accuracy'])}%",
             f"{rec:.3f}" if rec is not None else "-",
             f"{entry['avg_latency']:.2f}s",
@@ -317,7 +350,8 @@ def build_report(out_path: Path) -> Path:
         ))
     flow.append(Spacer(1, 8))
 
-    comp_pairs = [("Graphon\n(direct)", _pct(g_direct.get("qa_accuracy", 0)))]
+    loco_bar_label = "Graphon\n(direct, ultra)" if loco_ultra else "Graphon\n(direct)"
+    comp_pairs = [(loco_bar_label, _pct(g_direct.get("qa_accuracy", 0)))]
     comp_colors = [GRAPHON_BLUE]
     if bm25:
         comp_pairs.append(("BM25 anchor\n(our harness)", _pct(bm25["qa_accuracy"])))
@@ -331,7 +365,8 @@ def build_report(out_path: Path) -> Path:
         "vendor numbers (gray).", caption))
     flow.append(Spacer(1, 8))
 
-    rec_pairs = [("Graphon\n(direct)", g_direct.get("recall_at_10", 0))]
+    rec_label = "Graphon\n(standard retrieval)" if loco_ultra else "Graphon\n(direct)"
+    rec_pairs = [(rec_label, loco_recall)]
     rec_colors = [GRAPHON_BLUE]
     if bm25 and bm25.get("recall_at_10") is not None:
         rec_pairs.append(("BM25 anchor\n(our harness)", bm25["recall_at_10"]))
@@ -346,7 +381,8 @@ def build_report(out_path: Path) -> Path:
 
     # per-category table
     flow.append(Paragraph("LOCOMO accuracy by question category", h2))
-    cat_rows = [["Category", "n", "Graphon direct", "Graphon + reader", "BM25 anchor"]]
+    g_direct_col = "Graphon direct (ultra)" if loco_ultra else "Graphon direct"
+    cat_rows = [["Category", "n", g_direct_col, "Graphon + reader", "BM25 anchor"]]
     for cat in LOCOMO_CAT_ORDER:
         d = g_direct.get("by_category", {}).get(cat)
         if not d:
@@ -465,7 +501,7 @@ def build_report(out_path: Path) -> Path:
     cost_rows = [["Item", "Value"]]
     cost_rows.append(["Graph/index build, external LLM credits", "$0.00 (Graphon indexes server-side)"])
     cost_rows.append(["LOCOMO run OpenAI spend (reader + judge)",
-                      f"${ledger.get('total_cost_usd', 0):.2f}"])
+                      f"${_total_ledger_cost('locomo'):.2f}"])
     if lme_ledger:
         lme_cost = _lme_cost_estimate(loco)
         cost_rows.append(["LongMemEval-S run OpenAI spend (reader + judge)",

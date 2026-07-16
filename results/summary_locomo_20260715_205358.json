@@ -4,43 +4,28 @@
     "n_questions": 300,
     "seed": 42,
     "backends": [
-      "graphon",
-      "bm25"
+      "graphon"
     ],
     "graphon_modes": [
-      "direct",
-      "shared_reader"
+      "direct"
     ],
-    "reasoning_effort": "standard",
+    "reasoning_effort": "ultra",
     "llm_model": "gpt-4o",
     "retrieval_k": 10,
-    "started_at": "2026-07-07T23:46:25",
-    "graphon_builds": {
-      "locomo:conv-26": 10.2,
-      "locomo:conv-44": 9.8
-    },
-    "wall_seconds": 582.5,
-    "new_rows": 864
+    "started_at": "2026-07-15T20:53:32",
+    "graphon_builds": {},
+    "wall_seconds": 26.1,
+    "new_rows": 1
   },
   "ledger": {
     "roles": {
-      "decomposer": {
-        "input_tokens": 34085,
-        "output_tokens": 6895,
-        "calls": 288
-      },
       "judge": {
-        "input_tokens": 217614,
-        "output_tokens": 60679,
-        "calls": 864
-      },
-      "reader": {
-        "input_tokens": 2372536,
-        "output_tokens": 12223,
-        "calls": 576
+        "input_tokens": 291,
+        "output_tokens": 49,
+        "calls": 1
       }
     },
-    "total_cost_usd": 7.3586,
+    "total_cost_usd": 0.0012,
     "pricing_per_m": {
       "input": 2.5,
       "output": 10.0
@@ -101,52 +86,52 @@
     },
     "graphon/direct": {
       "n": 300,
-      "qa_accuracy": 0.8241,
-      "recall_at_10": 0.7511,
+      "qa_accuracy": 0.8522,
+      "recall_at_10": 0.8588,
       "recall_n": 298,
-      "strict_full_coverage": 0.7333,
-      "avg_latency": 5.598,
-      "p95_latency": 12.678,
+      "strict_full_coverage": 0.76,
+      "avg_latency": 30.1,
+      "p95_latency": 55.905,
       "errors": 0,
       "by_category": {
         "multi-hop": {
           "n": 55,
-          "qa_accuracy": 0.798,
-          "recall_at_10": 0.7207,
+          "qa_accuracy": 0.7675,
+          "recall_at_10": 0.7628,
           "recall_n": 55,
-          "strict_full_coverage": 0.5818,
-          "avg_latency": 7.295,
-          "p95_latency": 16.185,
+          "strict_full_coverage": 0.5273,
+          "avg_latency": 34.882,
+          "p95_latency": 63.23,
           "errors": 0
         },
         "open-domain": {
           "n": 19,
-          "qa_accuracy": 0.7105,
-          "recall_at_10": 0.6877,
+          "qa_accuracy": 0.6645,
+          "recall_at_10": 0.5761,
           "recall_n": 17,
           "strict_full_coverage": 0.5263,
-          "avg_latency": 7.772,
-          "p95_latency": 12.678,
+          "avg_latency": 40.802,
+          "p95_latency": 66.393,
           "errors": 0
         },
         "single-hop": {
           "n": 164,
-          "qa_accuracy": 0.8496,
-          "recall_at_10": 0.7439,
+          "qa_accuracy": 0.9212,
+          "recall_at_10": 0.9055,
           "recall_n": 164,
-          "strict_full_coverage": 0.7988,
-          "avg_latency": 4.863,
-          "p95_latency": 10.277,
+          "strict_full_coverage": 0.8659,
+          "avg_latency": 26.883,
+          "p95_latency": 45.51,
           "errors": 0
         },
         "temporal": {
           "n": 62,
-          "qa_accuracy": 0.8145,
-          "recall_at_10": 0.8145,
+          "qa_accuracy": 0.8024,
+          "recall_at_10": 0.8978,
           "recall_n": 62,
           "strict_full_coverage": 0.7581,
-          "avg_latency": 5.371,
-          "p95_latency": 8.364,
+          "avg_latency": 31.089,
+          "p95_latency": 51.668,
           "errors": 0
         }
       }
